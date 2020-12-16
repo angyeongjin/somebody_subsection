@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="auctionMapper">
+
+	<sql id="searchSql">
+		SELECT
+		a.auction_id,
+		a.members_id,
+		m.name,
+		a.title,
+		a.sales_time,
+		a.deadline,
+		a.contents,
+		a.detail,
+		a.tag,
+		a.online,
+		a.max_price,
+		a.thumbnail,
+		a.end
+		FROM auction AS a JOIN members AS m
+		ON
+		a.members_id = m.members_id
+	</sql>
+
+	<select id="searchAuction" parameterType="String"
+		resultType="Auction">
+		<include refid="searchSql" />
+		WHERE a.auction_id=#{value}
+	</select>
+
+	<select id="searchAuctionByTag" parameterType="String"
+		resultType="Auction">
+		<include refid="searchSql" />
+		WHERE a.tag REGEXP #{value} AND a.sales_time > NOW()
+		ORDER BY auction_id DESC
+	</select>
+
+	<select id="searchAuctionByMembers" parameterType="String"
+		resultType="Auction">
+		<include refid="searchSql" />
+		WHERE a.members_id=#{value}
+	</select>
+
+	<select id="searchAllAuction" resultType="Auction">
+		<include refid="searchSql" />
+		WHERE a.sales_time > NOW()
+		ORDER BY auction_id DESC
+	</select>
+
+	<select id="searchAllAuctionDesc" resultType="Auction">
+		<include refid="searchSql" />
+		WHERE a.sales_time > NOW()
+		ORDER BY a.sales_time DESC;
+	</select>
+
+	<select id="searchAuctionBySalesTime" parameterType="String"
+		resultType="Auction">
+		<include refid="searchSql" />
+		WHERE a.sales_time LIKE '${value}%'
+	</select>
+
+	<insert id="insertAuction" parameterType="Auction" useGeneratedKeys="true" keyProperty="auctionId">
+		INSERT
+		INTO auction
+		(members_id,title,
+		sales_time,deadline,contents,detail,tag,
+		online,
+		max_price, thumbnail)
+		VALUES (#{membersId},#{title},
+		STR_TO_DATE(#{salesTime}, '%Y-%m-%d %H:%i:%s'),
+		STR_TO_DATE(#{deadline}, '%Y-%m-%d %H:%i:%s'),
+		#{contents},#{detail},#{tag}, ${online},
+		${maxPrice}, #{thumbnail})
+	</insert>
+
+	<update id="updateAuction" parameterType="Auction">
+		UPDATE auction
+		SET title=#{title}, contents=#{contents},
+		deadline=STR_TO_DATE(#{deadline}, '%Y-%m-%d %H:%i:%s'),
+		<if test="detail != null"> detail=#{detail},</if>
+		<if test="thumbnail != null"> thumbnail=#{thumbnail},</if>
+		tag=#{tag}, online=${online}, max_price=${maxPrice}
+		WHERE auction_id=#{auctionId}
+	</update>
+	
+	<update id="updateEnd" parameterType="Auction">
+		UPDATE auction
+		SET end=1
+		WHERE auction_id=#{auctionId}
+	</update>
+
+	<delete id="deleteAuction" parameterType="String">
+		DELETE
+		FROM auction
+		WHERE
+		auction_id= #{value}
+	</delete>
+
+</mapper>

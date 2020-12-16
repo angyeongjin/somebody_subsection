@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="memberMapper">
+
+	<select id="searchMember" parameterType="String"
+		resultType="Members">
+		SELECT * From members WHERE members_id=#{value}
+	</select>
+	
+	<select id="searchAllMember" resultType="Members">
+		SELECT * From members
+	</select>
+	
+	<select id="searchMemberByEmail" parameterType="String"
+		resultType="Members">
+		SELECT * From members WHERE email=#{value}
+	</select>
+
+	<insert id="insertMember" parameterType="Members">
+		INSERT
+		INTO members (members_id, password, name, email, 
+		address, phone, account, image, portfolio)
+		VALUES(#{membersId}, SHA2(#{password}, 256), #{name}, #{email}, 
+		#{address}, #{phone}, #{account}, #{image}, #{portfolio})
+	</insert>
+
+	<update id="updateMember" parameterType="Members">
+		UPDATE members
+		SET name=#{name}, address=#{address}, 
+		phone=#{phone}, account=#{account}, about=#{about}
+		<if test="image != null">,image=#{image}</if>
+		<if test="portfolio != null">,portfolio=#{portfolio}</if>
+		WHERE members_id=#{membersId}
+	</update>
+	
+	<update id="updatePassword" parameterType="Members">
+		UPDATE members
+		SET password=SHA2(#{password}, 256)
+		WHERE members_id=#{membersId}
+	</update>
+
+	<delete id="deleteMember" parameterType="String">
+		DELETE
+		FROM members
+		WHERE
+		members_id=	#{value}
+	</delete>
+
+	<select id="passCheck" parameterType="Map" resultType="Members">
+		SELECT *
+		FROM members
+		WHERE members_id=#{membersId} AND password=SHA2(#{password}, 256)
+	</select>
+	
+	<insert id="insertVerify" parameterType="Verify">
+		INSERT
+		INTO verify (email, code)
+		VALUES(#{email}, #{code})
+	</insert>
+
+	<update id="updateVerify" parameterType="Verify">
+		UPDATE verify
+		SET code=#{code}
+		WHERE email=#{email}
+	</update>
+	
+	<select id="searchVerify" parameterType="String"
+		resultType="Verify">
+		SELECT * From verify 
+		WHERE email=#{email}
+	</select>
+	
+	<select id="checkVerify" parameterType="Verify"
+		resultType="Verify">
+		SELECT * From verify 
+		WHERE email=#{email} AND code=#{code}
+	</select>
+	
+	<update id="updateRank" parameterType="Members">
+		UPDATE members
+		SET rank=rank+#{rank}
+		WHERE members_id=#{membersId}
+	</update>
+	
+</mapper>

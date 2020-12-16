@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="attendMapper">
+
+	<sql id="searchSql">
+		SELECT
+		a.attend_id,
+		a.members_id,
+		a.auction_id,
+		m.name,
+		m.image,
+		a.date,
+		a.price,
+		a.state
+		FROM attend AS a JOIN members AS m
+		ON a.members_id = m.members_id
+	</sql>
+
+	<select id="searchAttendByAuctionId" parameterType="String"
+		resultType="Attend">
+		SELECT * FROM 
+		( SELECT
+		a.attend_id,
+		a.members_id,
+		a.auction_id,
+		m.name,
+		m.image,
+		a.date,
+		a.price,
+		a.state
+		FROM attend AS a JOIN members AS m
+		ON a.members_id = m.members_id
+		WHERE auction_id=#{auctionId} ORDER BY date DESC LIMIT 18446744073709551615) AS t
+		GROUP BY members_id ORDER BY price;
+	</select>
+
+	<select id="searchPickAttendByAuctionId" parameterType="String"
+		resultType="Attend">
+		<include refid="searchSql" />
+		WHERE a.auction_id=#{value} AND a.state=1
+	</select>
+
+	<select id="searchAttendByMembersId" parameterType="String"
+		resultType="Attend">
+		<include refid="searchSql" />
+		WHERE a.members_id=#{value}
+	</select>
+
+	<insert id="attend" parameterType="Attend">
+		INSERT
+		INTO attend (members_id,
+		auction_id, date, price, state)
+		VALUES (#{membersId}, #{auctionId},
+		NOW(), #{price}, 0)
+	</insert>
+
+	<update id="pickAttend" parameterType="String">
+		UPDATE attend
+		SET state=1
+		WHERE attend_id=#{value}
+	</update>
+
+	<delete id="cancelAttend" parameterType="String">
+		DELETE
+		FROM attend
+		WHERE
+		attend_id=#{value}
+	</delete>
+	
+	<delete id="cancelAttendByMembersId" parameterType="String">
+		DELETE
+		FROM attend
+		WHERE
+		members_id=#{value}
+	</delete>
+
+</mapper>
